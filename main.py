@@ -1,18 +1,18 @@
+import math
+from pydub import AudioSegment
 from openai import OpenAI
 from dotenv import load_dotenv
 import os
 load_dotenv()
-from pydub import AudioSegment
-import math
-
-
 
 
 def split_audio(input_file, output_folder, duration):
-    audio = AudioSegment.from_mp3(input_file)
+    print("start segment")
+    audio = AudioSegment.from_mp3(input_file, parameters=['-nostdin'])
     total_length = len(audio)
     num_parts = math.ceil(total_length / (duration * 1000))
- 
+    print(num_parts)
+
     for i in range(num_parts):
         start = i * duration * 1000
         end = (i + 1) * duration * 1000
@@ -21,14 +21,14 @@ def split_audio(input_file, output_folder, duration):
         split_audio.export(output_path, format="mp3")
         print(f"Exported {output_path}")
 
+
 def sort_key(filename):
     # Extract the numeric part from the filename using splitting and indexing
     return int(filename.split('_')[1].split('.')[0])
 
 
-
 def transcriber(folder_name):
-    filenames=[]
+    filenames = []
     client = OpenAI(api_key=os.getenv("API_KEY"))
     print(f"Processing folder: {folder_name}")
 
@@ -37,10 +37,10 @@ def transcriber(folder_name):
 
     # Get the full path of the folder
     full_folder_path = os.path.abspath(folder_name)
-    #print(full_folder_path)
+    # print(full_folder_path)
     for audio_filename in os.listdir(full_folder_path):
         filenames.append(audio_filename)
-    
+
     # Sort the filenames using the custom sorting key
     sorted_filenames = sorted(filenames, key=sort_key)
     # Loop through each file in the specified folder
@@ -61,11 +61,14 @@ def transcriber(folder_name):
                 print(f"Transcription for {audio_filename} completed.")
 
                 # Save individual transcript to a separate file
-                individual_filename = os.path.splitext(audio_filename)[0] + ".txt"
-                individual_file_path = os.path.join(full_folder_path, individual_filename)
+                individual_filename = os.path.splitext(audio_filename)[
+                    0] + ".txt"
+                individual_file_path = os.path.join(
+                    full_folder_path, individual_filename)
                 with open(individual_file_path, "w") as individual_file:
                     individual_file.write(individual_transcript)
-                    print(f"Individual transcript saved: {individual_filename}")
+                    print(
+                        f"Individual transcript saved: {individual_filename}")
 
                 # Append transcript to the combined transcript
                 combined_transcript += individual_transcript + "\n\n"
@@ -77,18 +80,18 @@ def transcriber(folder_name):
         combined_file.write(combined_transcript)
         print(f"Combined transcript saved: {combined_filename}")
 
-def transcribe():
-    input_file="./voice_files/ustad_haniff_lecture_1.mp3"
-    output_folder="./output"
-    duration=300
-    ##after s3 trigger,this function will look through the s3 bucket path to process the voice file
-    ##within output folder must group according user emails/account
-    ###after processing,the combined.txt file must be saved in s3 bucket.
-    split_audio(input_file,output_folder,duration)
+
+def transcribe(event, context):
+    input_file = "./voice_files/ustad_haniff_lecture_1.mp3"
+    output_folder = "./output"
+    duration = 300
+    # after s3 trigger,this function will look through the s3 bucket path to process the voice file
+    # within output folder must group according user emails/account
+    # after processing,the combined.txt file must be saved in s3 bucket.
+    print("start split audio")
+    split_audio(input_file, output_folder, duration)
+    print("start transcibe")
     transcriber(output_folder)
     print("Successful Execution")
 
-transcribe()
-
-
-    
+# transcribe()
