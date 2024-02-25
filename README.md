@@ -10,6 +10,21 @@ Pushing from local to aws ecr:
 2)docker tag {image_id} 997329144140.dkr.ecr.ap-southeast-1.amazonaws.com/transcriber-app:{image_id}
 3)docker push 997329144140.dkr.ecr.ap-southeast-1.amazonaws.com/transcriber-app:{image_id}
 
-Unfortunately the lambda hangs halfway without showing any error message.But all the dependencies are satisfied.
+For the docker to work within lambda,pls increase the lambda memory to 3008MB.Cannot use you own folder name to write.Have to use /tmp folder.
+
+
+
+
+To build you image:
+
+docker build -t <image name> .
+
+To run your image locally:
+
+docker run -p 9000:8080 <image name>
+
+In a separate terminal, you can then locally invoke the function using cURL:
+
+curl -XPOST "http://localhost:9000/2015-03-31/functions/function/invocations" -d '{"payload":"hello world!"}'
 
 

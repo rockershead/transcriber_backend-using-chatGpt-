@@ -74,8 +74,8 @@ def transcriber(folder_name):
                 combined_transcript += individual_transcript + "\n\n"
 
     # Write the combined transcript to a file
-    combined_filename = f"{folder_name}_combined.txt"
-    combined_file_path = os.path.join(full_folder_path, combined_filename)
+    combined_filename = "combined.txt"
+    combined_file_path = f"{folder_name}/{combined_filename}"
     with open(combined_file_path, "w") as combined_file:
         combined_file.write(combined_transcript)
         print(f"Combined transcript saved: {combined_filename}")
@@ -83,7 +83,7 @@ def transcriber(folder_name):
 
 def transcribe(event, context):
     input_file = "./voice_files/ustad_haniff_lecture_1.mp3"
-    output_folder = "./output"
+    output_folder = "/tmp"
     duration = 300
     # after s3 trigger,this function will look through the s3 bucket path to process the voice file
     # within output folder must group according user emails/account
